@@ -1,6 +1,8 @@
 package models
 
 import (
+	"database/sql"
+	"errors"
 	"strconv"
 )
 
@@ -9,8 +11,6 @@ type Holder struct {
 	Name string `json:"name"`
 	Cpf  string `json:"cpf"`
 }
-
-var Holders = make(map[int]Holder)
 
 func VerifyCPF(cpf string) bool {
 
@@ -62,4 +62,57 @@ func VerifyCPF(cpf string) bool {
 	}
 
 	return false
+}
+
+func InsertHolder(db *sql.DB, holder *Holder) error {
+	query := "INSERT INTO holders (name, cpf) VALUES ($1, $2) RETURNING id"
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return errors.New("failed to prepare SQL statement: " + err.Error())
+	}
+	defer stmt.Close()
+
+	err = stmt.QueryRow(holder.Name, holder.Cpf).Scan(&holder.ID)
+	if err != nil {
+		return errors.New("failed to insert holder into database: " + err.Error())
+	}
+	return nil
+}
+
+func DeleteHolder(db *sql.DB, cpf string) error {
+	query := "DELETE FROM holders WHERE cpf = $1"
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return errors.New("failed to prepare SQL statement: " + err.Error())
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(cpf)
+	if err != nil {
+		return errors.New("failed to delete holder from database: " + err.Error())
+	}
+	return nil
+}
+
+func SearchCPF(db *sql.DB, cpf string) (bool, error) {
+	query := "SELECT COUNT(*) FROM holders WHERE cpf = $1"
+	var count int
+	err := db.QueryRow(query, cpf).Scan(&count)
+	if err != nil {
+		return false, errors.New("failed to query database: " + err.Error())
+	}
+	return count > 0, nil
+}
+
+func SearchHolder(db *sql.DB, cpf string) (*Holder, error) {
+	query := "SELECT * FROM holders WHERE cpf = $1"
+	var holder Holder
+	err := db.QueryRow(query, cpf).Scan(&holder.ID, &holder.Name, &holder.Cpf)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("holder not found")
+		}
+		return nil, errors.New("failed to query database: " + err.Error())
+	}
+	return &holder, nil
 }

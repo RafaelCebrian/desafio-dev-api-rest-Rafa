@@ -11,12 +11,12 @@ import (
 func HandleRequest() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/api/holders", controllers.CreateNewHolder).Methods("Post")     //criar titular
-	r.HandleFunc("/api/holders", controllers.GetAllHolders).Methods("Get")        //buscar todos os titulares
-	r.HandleFunc("/api/holders/{id}", controllers.ReturnHolder).Methods("Get")    //buscar titular especifico
-	r.HandleFunc("/api/holders/{id}", controllers.DeleteHolder).Methods("Delete") //deletar titular
+	r.HandleFunc("/api/holders", controllers.CreateNewHolder).Methods("Post") //criar titular
 
-	r.HandleFunc("/api/accounts/{cpf}", controllers.CreateAccount).Methods("Post") //buscar criar conta usando o cpf do titular
+	r.HandleFunc("/api/holders/{cpf}", controllers.ReturnHolder).Methods("Get")    //buscar titular especifico
+	r.HandleFunc("/api/holders/{cpf}", controllers.DeleteHolder).Methods("Delete") //deletar titular
+
+	r.HandleFunc("/api/accounts/{cpf}", controllers.CreateAccount).Methods("Post") //criar conta usando o cpf do titular
 
 	r.HandleFunc("/api/accounts", controllers.GetAllAccounts).Methods("Get") //buscar todas as contas
 

@@ -29,11 +29,11 @@ func CreateAccount(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if SearchCPF(cpf) == false {
-		rw.WriteHeader(http.StatusNotFound)
-		rw.Write([]byte("Cpf not found"))
-		return
-	}
+	// if SearchCPF(cpf) == false {
+	// 	rw.WriteHeader(http.StatusNotFound)
+	// 	rw.Write([]byte("Cpf not found"))
+	// 	return
+	// }
 
 	agencyAccount := rand.Intn(10000)
 

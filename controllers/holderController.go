@@ -2,26 +2,28 @@ package controllers
 
 import (
 	"encoding/json"
-	"strconv"
 
 	"net/http"
 
+	"github.com/RafaelCebrian/desafio-dev-api-rest-Rafa/database"
 	"github.com/RafaelCebrian/desafio-dev-api-rest-Rafa/models"
 	"github.com/gorilla/mux"
 )
 
-var lastIDHolder int
-
-func init() {
-	lastIDHolder = 0
-}
-
 func CreateNewHolder(rw http.ResponseWriter, req *http.Request) {
+
+	db, err := database.ConnectDB()
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Failed to connect to database"))
+		return
+	}
+	defer db.Close()
 
 	decoder := json.NewDecoder(req.Body)
 	var newHolder models.Holder
 
-	err := decoder.Decode(&newHolder)
+	err = decoder.Decode(&newHolder)
 	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
 		rw.Write([]byte("Error in request body"))
@@ -33,15 +35,25 @@ func CreateNewHolder(rw http.ResponseWriter, req *http.Request) {
 		rw.Write([]byte("Invalid CPF"))
 		return
 	}
-	if SearchCPF(newHolder.Cpf) == true {
-		rw.WriteHeader(http.StatusConflict)
-		rw.Write([]byte("CPF already registered"))
+
+	cpf := newHolder.Cpf
+	exists, err := models.SearchCPF(db, cpf)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Error checking CPF in database: " + err.Error()))
 		return
 	}
+	if exists == true {
+		rw.WriteHeader(http.StatusConflict)
+		rw.Write([]byte("CPF already registered"))
+	}
 
-	lastIDHolder++
-	newHolder.ID = lastIDHolder
-	models.Holders[lastIDHolder] = newHolder
+	err = models.InsertHolder(db, &newHolder)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Error inserting holder into database"))
+		return
+	}
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
@@ -50,50 +62,43 @@ func CreateNewHolder(rw http.ResponseWriter, req *http.Request) {
 
 func DeleteHolder(rw http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	idStr := vars["id"]
+	cpf := vars["cpf"]
 
-	id, err := strconv.Atoi(idStr)
+	db, err := database.ConnectDB()
 	if err != nil {
-		rw.WriteHeader(http.StatusBadRequest)
-		rw.Write([]byte("Error in ID value"))
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Failed to connect to database"))
 		return
 	}
-	_, found := models.Holders[id]
-	if found == false {
-		rw.WriteHeader(http.StatusNotFound)
-		rw.Write([]byte("Holder not found"))
+	defer db.Close()
+
+	err = models.DeleteHolder(db, cpf)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Error at deleting holder from database"))
 		return
 	}
 
-	delete(models.Holders, id)
 	rw.WriteHeader(http.StatusOK)
-}
-
-func GetAllHolders(rw http.ResponseWriter, req *http.Request) {
-
-	rw.Header().Set("Content-Type", "application/json")
-	rw.WriteHeader(http.StatusOK)
-	json.NewEncoder(rw).Encode(models.Holders)
-
 }
 
 func ReturnHolder(rw http.ResponseWriter, req *http.Request) {
 
 	vars := mux.Vars(req)
-	idStr := vars["id"]
+	cpf := vars["cpf"]
 
-	id, err := strconv.Atoi(idStr)
+	db, err := database.ConnectDB()
 	if err != nil {
-		rw.WriteHeader(http.StatusBadRequest)
-		rw.Write([]byte("Error in ID value"))
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Failed to connect to database"))
 		return
 	}
+	defer db.Close()
 
-	holder, found := models.Holders[id]
-
-	if found == false {
-		rw.WriteHeader(http.StatusNotFound)
-		rw.Write([]byte("Holder not found"))
+	holder, err := models.SearchHolder(db, cpf)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Error at deleting holder from database"))
 		return
 	}
 
@@ -101,13 +106,4 @@ func ReturnHolder(rw http.ResponseWriter, req *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 	json.NewEncoder(rw).Encode(holder)
 
-}
-
-func SearchCPF(cpf string) bool {
-	for _, holder := range models.Holders {
-		if holder.Cpf == cpf {
-			return true
-		}
-	}
-	return false
 }
