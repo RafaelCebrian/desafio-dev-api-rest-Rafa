@@ -7,9 +7,9 @@ import (
 )
 
 type Holder struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-	Cpf  string `json:"cpf"`
+	holder_id int    `json:"holder_id"`
+	Name      string `json:"name"`
+	Cpf       string `json:"cpf"`
 }
 
 func VerifyCPF(cpf string) bool {
@@ -65,14 +65,14 @@ func VerifyCPF(cpf string) bool {
 }
 
 func InsertHolder(db *sql.DB, holder *Holder) error {
-	query := "INSERT INTO holders (name, cpf) VALUES ($1, $2) RETURNING id"
+	query := "INSERT INTO holders (name, cpf) VALUES ($1, $2) RETURNING holder_id"
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		return errors.New("failed to prepare SQL statement: " + err.Error())
 	}
 	defer stmt.Close()
 
-	err = stmt.QueryRow(holder.Name, holder.Cpf).Scan(&holder.ID)
+	err = stmt.QueryRow(&holder.Name, &holder.Cpf).Scan(&holder.holder_id)
 	if err != nil {
 		return errors.New("failed to insert holder into database: " + err.Error())
 	}
@@ -107,7 +107,7 @@ func SearchCPF(db *sql.DB, cpf string) (bool, error) {
 func SearchHolder(db *sql.DB, cpf string) (*Holder, error) {
 	query := "SELECT * FROM holders WHERE cpf = $1"
 	var holder Holder
-	err := db.QueryRow(query, cpf).Scan(&holder.ID, &holder.Name, &holder.Cpf)
+	err := db.QueryRow(query, cpf).Scan(&holder.holder_id, &holder.Name, &holder.Cpf)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("holder not found")

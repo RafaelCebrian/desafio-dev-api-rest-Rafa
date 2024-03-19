@@ -1,3 +1,0 @@
-DROP TABLE IF EXISTS operations
-DROP TABLE IF EXISTS accounts
-DROP TABLE IF EXISTS holders

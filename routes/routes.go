@@ -18,9 +18,7 @@ func HandleRequest() {
 
 	r.HandleFunc("/api/accounts/{cpf}", controllers.CreateAccount).Methods("Post") //criar conta usando o cpf do titular
 
-	r.HandleFunc("/api/accounts", controllers.GetAllAccounts).Methods("Get") //buscar todas as contas
-
-	r.HandleFunc("/api/accounts/{number}", controllers.CheckAccount).Methods("Get") //buscar conta especifica
+	r.HandleFunc("/api/accounts/{number}", controllers.ReturnAccount).Methods("Get") //buscar conta especifica
 
 	r.HandleFunc("/api/accounts/block/{number}", controllers.BlockAccount).Methods("Patch")   //bloquear conta
 	r.HandleFunc("/api/accounts/unlock/{number}", controllers.UnlockAccount).Methods("Patch") //desbloquear conta

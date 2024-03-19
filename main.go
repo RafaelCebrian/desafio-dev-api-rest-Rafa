@@ -9,9 +9,7 @@ import (
 
 func main() {
 
-	fmt.Println("Iniciando o servidor Rest com Go")
-
+	fmt.Println("Starting Rest server with Go")
 	database.ConnectDB()
-
 	routes.HandleRequest()
 }
