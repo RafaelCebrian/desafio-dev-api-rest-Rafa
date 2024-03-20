@@ -2,10 +2,9 @@ package controllers
 
 import (
 	"encoding/json"
-	"strconv"
-
 	"math/rand"
 	"net/http"
+	"strconv"
 
 	"github.com/RafaelCebrian/desafio-dev-api-rest-Rafa/database"
 	"github.com/RafaelCebrian/desafio-dev-api-rest-Rafa/models"
@@ -97,7 +96,34 @@ func ReturnAccount(rw http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(rw).Encode(account)
 	defer db.Close()
 }
+func DeleteAccount(rw http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	number := vars["number"]
 
+	if number == "" {
+		rw.WriteHeader(http.StatusBadRequest)
+		rw.Write([]byte("account number value is null"))
+		return
+	}
+
+	db, err := database.ConnectDB()
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Failed to connect to database"))
+		return
+	}
+
+	err = models.DeleteAccountDB(db, number)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Error at deleting account from database" + err.Error()))
+		return
+	}
+
+	rw.WriteHeader(http.StatusOK)
+	rw.Write([]byte("Account deleted successfully"))
+	defer db.Close()
+}
 func BlockAccount(rw http.ResponseWriter, req *http.Request) {
 
 	vars := mux.Vars(req)
@@ -116,7 +142,7 @@ func BlockAccount(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	account, err := models.UpdateAccountBlock(db, number)
+	err = models.UpdateAccountBlock(db, number)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Error at geting account from database"))
@@ -125,7 +151,7 @@ func BlockAccount(rw http.ResponseWriter, req *http.Request) {
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	json.NewEncoder(rw).Encode(account)
+	rw.Write([]byte("Account blocked successfully"))
 	defer db.Close()
 
 }
@@ -148,7 +174,7 @@ func UnlockAccount(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	account, err := models.UpdateAccountUnlock(db, number)
+	err = models.UpdateAccountUnlock(db, number)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Error at geting account from database"))
@@ -157,7 +183,7 @@ func UnlockAccount(rw http.ResponseWriter, req *http.Request) {
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	json.NewEncoder(rw).Encode(account)
+	rw.Write([]byte("Account unlocked successfully"))
 	defer db.Close()
 
 }
@@ -180,7 +206,7 @@ func DisableAccount(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	account, err := models.UpdateAccountDeactivate(db, number)
+	err = models.UpdateAccountDeactivate(db, number)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Error at geting account from database"))
@@ -189,7 +215,7 @@ func DisableAccount(rw http.ResponseWriter, req *http.Request) {
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	json.NewEncoder(rw).Encode(account)
+	rw.Write([]byte("Account successfully deactivated"))
 	defer db.Close()
 
 }
@@ -212,15 +238,15 @@ func EnableAccount(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	account, err := models.UpdateAccountActivate(db, number)
+	err = models.UpdateAccountActivate(db, number)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("Error at geting account from database"))
+		rw.Write([]byte("Error at geting account from database" + err.Error()))
 		return
 	}
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	json.NewEncoder(rw).Encode(account)
+	rw.Write([]byte("Account successfully activated"))
 	defer db.Close()
 }

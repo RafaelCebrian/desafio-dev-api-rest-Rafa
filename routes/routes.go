@@ -20,6 +20,8 @@ func HandleRequest() {
 
 	r.HandleFunc("/api/accounts/{number}", controllers.ReturnAccount).Methods("Get") //buscar conta especifica
 
+	r.HandleFunc("/api/accounts/{number}", controllers.DeleteAccount).Methods("Delete") //deletar conta
+
 	r.HandleFunc("/api/accounts/block/{number}", controllers.BlockAccount).Methods("Patch")   //bloquear conta
 	r.HandleFunc("/api/accounts/unlock/{number}", controllers.UnlockAccount).Methods("Patch") //desbloquear conta
 
@@ -27,9 +29,9 @@ func HandleRequest() {
 	r.HandleFunc("/api/accounts/enable/{number}", controllers.EnableAccount).Methods("Patch")   //habilitar conta
 
 	r.HandleFunc("/api/accounts/{number}/statement", controllers.RequestStatement).Methods("GET") //extrato
+	//localhost:8000/api/accounts/13066784/statement?min=2024-03-20T12:00:00-03:00&max=2024-03-20T12:12:00-03:00 exemplo
 
-	r.HandleFunc("/api/accounts/{number}/deposit/{amount}", controllers.DepositAccount).Methods("Patch") // deposito
-
+	r.HandleFunc("/api/accounts/{number}/deposit/{amount}", controllers.DepositAccount).Methods("Patch")   // deposito
 	r.HandleFunc("/api/accounts/{number}/withdraw/{amount}", controllers.WithdrawAccount).Methods("Patch") // saque
 
 	log.Fatal(http.ListenAndServe(":8000", r))

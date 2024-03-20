@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "c54a7b39-884d-4b37-93bf-e5245d7d0f4e",
 		"name": "Desafio-Rest",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "33621537"
 	},
 	"item": [
@@ -13,14 +13,24 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"nome1\",\r\n    \"cpf\": \"38791161053\"\r\n}",
+					"raw": "{\r\n    \"name\": \"nome1\",\r\n    \"cpf\": \"70106017035\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
 						}
 					}
 				},
-				"url": "localhost:8000/api/holders"
+				"url": {
+					"raw": "localhost:8000/api/holders",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"holders"
+					]
+				}
 			},
 			"response": []
 		},
@@ -38,52 +48,57 @@
 						}
 					}
 				},
-				"url": "localhost:8000/api/holders"
+				"url": {
+					"raw": "localhost:8000/api/holders",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"holders"
+					]
+				}
 			},
 			"response": []
 		},
 		{
-			"name": "Get all holsters",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "",
-						"value": "44",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": "localhost:8000/api/holders"
-			},
-			"response": []
-		},
-		{
-			"name": "Get holster 1",
+			"name": "Get holster",
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": "localhost:8000/api/holders/1"
+				"url": {
+					"raw": "localhost:8000/api/holders/70106017035",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"holders",
+						"70106017035"
+					]
+				}
 			},
 			"response": []
 		},
 		{
-			"name": "Delete holster 1",
+			"name": "Delete holster",
 			"request": {
 				"method": "DELETE",
 				"header": [],
-				"url": "localhost:8000/api/holders/1"
+				"url": {
+					"raw": "localhost:8000/api/holders/70106017035",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"holders",
+						"70106017035"
+					]
+				}
 			},
 			"response": []
 		},
@@ -107,7 +122,18 @@
 						}
 					}
 				},
-				"url": "localhost:8000/api/accounts/38791161053"
+				"url": {
+					"raw": "localhost:8000/api/accounts/70106017035",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"accounts",
+						"70106017035"
+					]
+				}
 			},
 			"response": []
 		},
@@ -131,16 +157,18 @@
 						}
 					}
 				},
-				"url": "localhost:8000/api/accounts/80539427098"
-			},
-			"response": []
-		},
-		{
-			"name": "Get all accounts",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": "localhost:8000/api/accounts"
+				"url": {
+					"raw": "localhost:8000/api/accounts/80539427098",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"accounts",
+						"80539427098"
+					]
+				}
 			},
 			"response": []
 		},
@@ -149,7 +177,38 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": "localhost:8000/api/accounts/40"
+				"url": {
+					"raw": "localhost:8000/api/accounts/13066784",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"accounts",
+						"13066784"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete account",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/api/accounts/74054064",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"accounts",
+						"74054064"
+					]
+				}
 			},
 			"response": []
 		},
@@ -158,7 +217,19 @@
 			"request": {
 				"method": "PATCH",
 				"header": [],
-				"url": "localhost:8000/api/accounts/enable/40"
+				"url": {
+					"raw": "localhost:8000/api/accounts/disable/84427714",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"accounts",
+						"disable",
+						"84427714"
+					]
+				}
 			},
 			"response": []
 		},
@@ -167,7 +238,19 @@
 			"request": {
 				"method": "PATCH",
 				"header": [],
-				"url": "localhost:8000/api/accounts/enable/40"
+				"url": {
+					"raw": "localhost:8000/api/accounts/enable/84427714",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"accounts",
+						"enable",
+						"84427714"
+					]
+				}
 			},
 			"response": []
 		},
@@ -176,7 +259,19 @@
 			"request": {
 				"method": "PATCH",
 				"header": [],
-				"url": "localhost:8000/api/accounts/enable/40"
+				"url": {
+					"raw": "localhost:8000/api/accounts/block/84427714",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"accounts",
+						"block",
+						"84427714"
+					]
+				}
 			},
 			"response": []
 		},
@@ -185,7 +280,19 @@
 			"request": {
 				"method": "PATCH",
 				"header": [],
-				"url": "localhost:8000/api/accounts/enable/40"
+				"url": {
+					"raw": "localhost:8000/api/accounts/unlock/84427714",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"accounts",
+						"unlock",
+						"84427714"
+					]
+				}
 			},
 			"response": []
 		},
@@ -194,7 +301,20 @@
 			"request": {
 				"method": "PATCH",
 				"header": [],
-				"url": "localhost:8000/api/accounts/enable/40"
+				"url": {
+					"raw": "localhost:8000/api/accounts/13066784/deposit/1000",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"accounts",
+						"13066784",
+						"deposit",
+						"1000"
+					]
+				}
 			},
 			"response": []
 		},
@@ -203,7 +323,20 @@
 			"request": {
 				"method": "PATCH",
 				"header": [],
-				"url": "localhost:8000/api/accounts/enable/40"
+				"url": {
+					"raw": "localhost:8000/api/accounts/13066784/withdraw/1000",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"accounts",
+						"13066784",
+						"withdraw",
+						"1000"
+					]
+				}
 			},
 			"response": []
 		},
@@ -242,7 +375,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8000/api/accounts/388/statement?min=2024-03-15T15:01:40-03:00&max=2024-03-15T15:02:11-03:00",
+					"raw": "localhost:8000/api/accounts/13066784/statement?min=2024-03-20T12:00:00-03:00&max=2024-03-20T12:12:00-03:00",
 					"host": [
 						"localhost"
 					],
@@ -250,18 +383,10 @@
 					"path": [
 						"api",
 						"accounts",
-						"388",
+						"13066784",
 						"statement"
 					],
 					"query": [
-						{
-							"key": "min",
-							"value": "2024-03-15T15:01:40-03:00"
-						},
-						{
-							"key": "max",
-							"value": "2024-03-15T15:02:11-03:00"
-						},
 						{
 							"key": "",
 							"value": "2024-03-15T15:01:40-03:00",
@@ -271,6 +396,14 @@
 							"key": null,
 							"value": "",
 							"disabled": true
+						},
+						{
+							"key": "min",
+							"value": "2024-03-20T12:00:00-03:00"
+						},
+						{
+							"key": "max",
+							"value": "2024-03-20T12:12:00-03:00"
 						}
 					]
 				}

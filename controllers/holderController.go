@@ -79,7 +79,7 @@ func DeleteHolder(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = models.DeleteHolder(db, cpf)
+	err = models.DeleteHolderDB(db, cpf)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Error at deleting holder from database"))
@@ -87,6 +87,7 @@ func DeleteHolder(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	rw.WriteHeader(http.StatusOK)
+	rw.Write([]byte("Holder deleted successfully"))
 	defer db.Close()
 }
 

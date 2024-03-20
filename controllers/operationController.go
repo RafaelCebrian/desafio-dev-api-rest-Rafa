@@ -46,53 +46,54 @@ func DepositAccount(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if account.Active == false || account.Blocked == true {
-
+	if account.Active == false {
 		rw.WriteHeader(http.StatusForbidden)
-		if account.Active == false {
-			rw.Write([]byte("Inactive account"))
-		} else {
-			rw.Write([]byte("Blocked account"))
-		}
+		rw.Write([]byte("Inactive account"))
 		return
-	} else {
-
-		if amount < 0 {
-
-			rw.WriteHeader(http.StatusBadRequest)
-			rw.Write([]byte("Negative deposit amount"))
-			return
-		}
-
-		operationStatus := "Successful"
-
-		newOperation := models.Operation{
-			Fk_account: number,
-			Type:       "deposit",
-			Amount:     amount,
-			Status:     operationStatus,
-		}
-
-		err := models.CreateOperation(db, &newOperation)
-		if err != nil {
-			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte("Error at creating an deposit operation in database"))
-			return
-		}
-
-		err = models.UpdateAccountBalance(db, number, amount, newOperation.Type)
-		if err != nil {
-			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte("Error at updating the account balance in database"))
-			return
-		}
-		rw.WriteHeader(http.StatusOK)
 	}
+
+	if account.Blocked == true {
+		rw.WriteHeader(http.StatusForbidden)
+		rw.Write([]byte("Blocked account"))
+		return
+	}
+
+	if amount < 0 {
+
+		rw.WriteHeader(http.StatusBadRequest)
+		rw.Write([]byte("Negative deposit amount"))
+		return
+	}
+
+	operationStatus := "Successful"
+
+	newOperation := models.Operation{
+		Fk_account: number,
+		Type:       "deposit",
+		Amount:     amount,
+		Status:     operationStatus,
+	}
+
+	err = models.CreateOperation(db, &newOperation)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Error at creating an deposit operation in database"))
+		return
+	}
+
+	err = models.UpdateAccountBalance(db, number, amount, newOperation.Type)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Error at updating the account balance in database"))
+		return
+	}
+	defer db.Close()
+	rw.WriteHeader(http.StatusOK)
+	rw.Write([]byte("Successfully deposit: " + amountStr))
 }
+
 func WithdrawAccount(rw http.ResponseWriter, req *http.Request) {
-
 	vars := mux.Vars(req)
-
 	number := vars["number"]
 	amountStr := vars["amount"]
 
@@ -119,79 +120,108 @@ func WithdrawAccount(rw http.ResponseWriter, req *http.Request) {
 	account, err := models.SearchAccount(db, number)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("Error at geting account from database"))
+		rw.Write([]byte("Error at getting account from database"))
 		return
 	}
-	if account.Active == false || account.Blocked == true {
 
+	if account.Active == false {
 		rw.WriteHeader(http.StatusForbidden)
-		if account.Active == false {
-			rw.Write([]byte("Inactive account"))
-		} else {
-			rw.Write([]byte("Blocked account"))
-		}
+		rw.Write([]byte("Inactive account"))
 		return
-	} else {
+	}
 
-		var operationStatus string
+	if account.Blocked == true {
+		rw.WriteHeader(http.StatusForbidden)
+		rw.Write([]byte("Blocked account"))
+		return
+	}
 
+	if amount < 0 {
+		rw.WriteHeader(http.StatusBadRequest)
+		rw.Write([]byte("Negative withdrawal amount"))
+		return
+	}
+
+	totalWithdraws, err := models.GetDailyLimit(db, number)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Failed to get total withdrawals for the day" + err.Error()))
+		return
+	}
+
+	dailyLimit := 2000.0
+	if totalWithdraws+amount > dailyLimit {
 		newOperation := models.Operation{
 			Fk_account: number,
-			Type:       "withdraw",
+			Type:       "withdrawal",
 			Amount:     amount,
-			Status:     operationStatus,
+			Status:     "Failed - Daily withdrawal limit exceeded",
 		}
 
-		if amount < 0 {
-			rw.WriteHeader(http.StatusBadRequest)
-			rw.Write([]byte("Negative withdraw amount"))
-			return
-		}
-
-		totalWithdraws, err := models.GetDailyLimit(db, number, time.Now())
+		err := models.CreateOperation(db, &newOperation)
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte("Failed to get total withdrawals for the day" + err.Error()))
+			rw.Write([]byte("Error at creating a withdrawal operation in database"))
 			return
 		}
 
-		dailyLimit := 2000.0
-		if totalWithdraws+amount > dailyLimit {
+		rw.WriteHeader(http.StatusForbidden)
+		rw.Write([]byte("Daily withdrawal limit exceeded"))
+		return
+	}
 
-			err := models.CreateOperation(db, &newOperation)
-			if err != nil {
-				rw.WriteHeader(http.StatusInternalServerError)
-				rw.Write([]byte("Error at creating an withdraw operation in database"))
-				return
-			}
+	currentBalance, err := models.GetCurrentAccountBalance(db, number)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Error at geting the current balance"))
+		return
+	}
 
-			newOperation.Status = "Failed - daily withdrawal limit exceeded"
-
-			rw.WriteHeader(http.StatusForbidden)
-			rw.Write([]byte("Daily withdrawal limit exceeded"))
-
-		} else {
-
-			err := models.CreateOperation(db, &newOperation)
-			if err != nil {
-				rw.WriteHeader(http.StatusInternalServerError)
-				rw.Write([]byte("Error at creating an withdraw operation in database"))
-				return
-			}
-
-			err = models.UpdateAccountBalance(db, number, amount, newOperation.Type)
-			if err != nil {
-				rw.WriteHeader(http.StatusInternalServerError)
-				rw.Write([]byte("Error at updating the account balance in database"))
-				return
-			}
-
-			rw.WriteHeader(http.StatusOK)
+	if currentBalance-amount < 0 {
+		newOperation := models.Operation{
+			Fk_account: number,
+			Type:       "withdrawal",
+			Amount:     amount,
+			Status:     "Failed - insufficient funds",
 		}
 
-	}
-}
+		err := models.CreateOperation(db, &newOperation)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			rw.Write([]byte("Error at creating a withdrawal operation in database"))
+			return
+		}
 
+		rw.WriteHeader(http.StatusForbidden)
+		rw.Write([]byte("Insufficient funds"))
+		return
+	}
+
+	newOperation := models.Operation{
+		Fk_account: number,
+		Type:       "withdrawal",
+		Amount:     amount,
+		Status:     "Successful",
+	}
+
+	err = models.CreateOperation(db, &newOperation)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Error at creating a withdrawal operation in database"))
+		return
+	}
+
+	err = models.UpdateAccountBalance(db, number, amount, newOperation.Type)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Error at updating the account balance in database"))
+		return
+	}
+
+	defer db.Close()
+	rw.WriteHeader(http.StatusOK)
+	rw.Write([]byte("Successfully withdrawn: " + amountStr))
+}
 func RequestStatement(rw http.ResponseWriter, req *http.Request) {
 
 	vars := mux.Vars(req)
@@ -231,10 +261,11 @@ func RequestStatement(rw http.ResponseWriter, req *http.Request) {
 	operations, err := models.GetStatement(db, number, minDate, maxDate)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("Error at retrieving account statement from database"))
+		rw.Write([]byte("Error at retrieving account statement from database" + err.Error()))
 		return
 	}
 
+	defer db.Close()
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(operations)
 	rw.WriteHeader(http.StatusOK)

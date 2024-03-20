@@ -79,18 +79,25 @@ func InsertHolder(db *sql.DB, holder *Holder) error {
 	return nil
 }
 
-func DeleteHolder(db *sql.DB, cpf string) error {
-	query := "DELETE FROM holders WHERE cpf = $1"
-	stmt, err := db.Prepare(query)
-	if err != nil {
-		return errors.New("failed to prepare SQL statement: " + err.Error())
-	}
-	defer stmt.Close()
+func DeleteHolderDB(db *sql.DB, cpf string) error {
 
-	_, err = stmt.Exec(cpf)
+	query := "DELETE FROM operations WHERE fk_account IN (SELECT number FROM accounts WHERE fk_holder = $1)"
+	_, err := db.Exec(query, cpf)
+	if err != nil {
+		return errors.New("failed to delete operations from database: " + err.Error())
+	}
+	query = "DELETE FROM accounts WHERE fk_holder = $1"
+	_, err = db.Exec(query, cpf)
+	if err != nil {
+		return errors.New("failed to delete accounts from database: " + err.Error())
+	}
+
+	query = "DELETE FROM holders WHERE cpf = $1"
+	_, err = db.Exec(query, cpf)
 	if err != nil {
 		return errors.New("failed to delete holder from database: " + err.Error())
 	}
+
 	return nil
 }
 

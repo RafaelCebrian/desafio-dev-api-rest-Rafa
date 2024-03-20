@@ -43,56 +43,66 @@ func SearchAccount(db *sql.DB, number string) (*Account, error) {
 	return &account, nil
 }
 
-func UpdateAccountBlock(db *sql.DB, number string) (*Account, error) {
+func DeleteAccountDB(db *sql.DB, number string) error {
+
+	query := "DELETE FROM operations WHERE fk_account = $1"
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return errors.New("failed to prepare SQL statement: " + err.Error())
+	}
+
+	_, err = stmt.Exec(number)
+	if err != nil {
+		return errors.New("failed to delete operations from database: " + err.Error())
+	}
+
+	query = "DELETE FROM accounts WHERE number = $1"
+	stmt, err = db.Prepare(query)
+	if err != nil {
+		return errors.New("failed to prepare SQL statement: " + err.Error())
+	}
+
+	_, err = stmt.Exec(number)
+	if err != nil {
+		return errors.New("failed to delete account from database: " + err.Error())
+	}
+	return nil
+}
+
+func UpdateAccountBlock(db *sql.DB, number string) error {
 	query := "UPDATE accounts SET blocked = true WHERE number = $1"
-	var account Account
-	err := db.QueryRow(query, number).Scan(&account.Account_id, &account.Fk_holder, &account.Number, &account.Agency, &account.Blocked)
+	_, err := db.Exec(query, number)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errors.New("account not found")
-		}
-		return nil, errors.New("failed to query database: " + err.Error())
+		return errors.New("Failed to block account: " + err.Error())
 	}
-	return &account, nil
+	return nil
 }
 
-func UpdateAccountUnlock(db *sql.DB, number string) (*Account, error) {
+func UpdateAccountUnlock(db *sql.DB, number string) error {
 	query := "UPDATE accounts SET blocked = false WHERE number = $1"
-	var account Account
-	err := db.QueryRow(query, number).Scan(&account.Account_id, &account.Fk_holder, &account.Number, &account.Agency, &account.Blocked)
+	_, err := db.Exec(query, number)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errors.New("account not found")
-		}
-		return nil, errors.New("failed to query database: " + err.Error())
+		return errors.New("Failed to unlock account: " + err.Error())
 	}
-	return &account, nil
+	return nil
 }
 
-func UpdateAccountActivate(db *sql.DB, number string) (*Account, error) {
+func UpdateAccountActivate(db *sql.DB, number string) error {
 	query := "UPDATE accounts SET active = true WHERE number = $1"
-	var account Account
-	err := db.QueryRow(query, number).Scan(&account.Account_id, &account.Fk_holder, &account.Number, &account.Agency, &account.Active)
+	_, err := db.Exec(query, number)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errors.New("account not found")
-		}
-		return nil, errors.New("failed to query database: " + err.Error())
+		return errors.New("Failed to activate account: " + err.Error())
 	}
-	return &account, nil
+	return nil
 }
 
-func UpdateAccountDeactivate(db *sql.DB, number string) (*Account, error) {
+func UpdateAccountDeactivate(db *sql.DB, number string) error {
 	query := "UPDATE accounts SET active = false WHERE number = $1"
-	var account Account
-	err := db.QueryRow(query, number).Scan(&account.Account_id, &account.Fk_holder, &account.Number, &account.Agency, &account.Active)
+	_, err := db.Exec(query, number)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errors.New("account not found")
-		}
-		return nil, errors.New("failed to query database: " + err.Error())
+		return errors.New("Failed to deactivate account: " + err.Error())
 	}
-	return &account, nil
+	return nil
 }
 
 func UpdateAccountBalance(db *sql.DB, number string, amount float64, operationType string) error {
